@@ -56,7 +56,8 @@ bool checkEqual(T *array1, T *array2, long n)
   for(long i = 0; i < n; i++)
   {
     if (array1[i] != array2[i])
-    {
+    { 
+      std::cout<<"this is not eq"<<array1[i]<<" "<<array2[i]<<std::endl;
       flag = false;
       break;
     }
