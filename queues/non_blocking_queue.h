@@ -130,28 +130,13 @@ public:
         pointer_t<Node<T>> head;
         std::cout<<"inside dequeue"<<std::endl;
         while(true){
-            // std::cout<<"inside dequeue 0.1"<<std::endl;
-
             head = q_head;
-            // std::cout<<"inside dequeue 0.2"<<std::endl;
-
             LFENCE;
-            // std::cout<<"inside dequeue 0.3"<<std::endl;
-
             pointer_t<Node<T>> tail = q_tail;
-            // std::cout<<"inside dequeue 0.4"<<std::endl;
-
             LFENCE;
-            // std::cout<<"inside dequeue 0.5"<<std::endl;
-
             pointer_t<Node<T>> next = head.address()->next;
-            // std::cout<<"inside dequeue 0.6"<<std::endl;
-
             LFENCE;
-            // std::cout<<"inside dequeue 1"<<std::endl;
-
             if (head.ptr == q_head.ptr) {
-                std::cout<<"inside dequeue 1a"<<std::endl;
 
                 if(head.address() == tail.address()) {
                     if(next.address() == NULL)
@@ -161,14 +146,14 @@ public:
                     pointer_t<Node<T>> newPtr;
                     make_address(next.address(),tail.count() + 1, &newPtr );
                     CAS(&q_tail, tail, newPtr);	//DLABEL
+                    SFENCE;
+                    std::cout<<"moving tail"<<q_tail.address()<<std::endl;
                 }
                 else {
-                    std::cout<<"inside dequeue 3a"<<std::endl;
-
-                    // *value = next.address()->value;
+                    *value = next.address()->value;
                     pointer_t<Node<T>> newPtr;
                     make_address(next.address(),head.count() + 1, &newPtr );
-                    std::cout<<"inside dequeue 3b dequeing"<<q_head.ptr->value<<std::endl;
+                    std::cout<<"inside dequeing"<<q_head.address()->value<<std::endl;
 
                     if(CAS(&q_head, head, newPtr))
                         // std::cout<<"inside dequeue 3c new head:"<<q_head.ptr->value<<std::endl;
@@ -176,7 +161,6 @@ public:
                 }
             }
         }
-        std::cout<<"inside dequeue 4"<<std::endl;
         
         my_allocator_.freeNode(head.address());
         std::cout<<"inside dequeue 5"<<std::endl;
