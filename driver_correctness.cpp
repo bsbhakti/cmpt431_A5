@@ -65,8 +65,8 @@ struct ProducerWithInputs
         t.start();
         // std::cout << "Start producing..\n";
         for (long i = start_; i < end_; i++)
-        { 
-            std::cout<<"enqueing "<<i<<std::endl;
+        {
+            std::cout<<"enueing"<<inputs_[i]<<std::endl;
             my_queue.enqueue(inputs_[i]);
         }
 
@@ -125,7 +125,6 @@ struct ConsumerWithOutput
         // std::cout << "Start consuming..\n";
         while (true)
         {
-            std::cout<<"im here 3"<<std::endl;
             if (my_queue.dequeue(&value))
             {
                 my_output_[count] = value;
@@ -229,11 +228,9 @@ int main(int argc, char *argv[])
     // Start consumers --------------------------------------------
     // std::cout << "Creating consumers\n";
     for (int i = 0; i < n_consumers; ++i)
-    {   std::cout<<"im here 1"<<std::endl;
+    {
         consumer_data.push_back(ConsumerWithOutput(i, &producers_finished, n_producers, output_values[i]));
         consumers[i] = std::thread(consumer_data[i]);
-         std::cout<<"im here 2"<<std::endl;
-        
     }
 
     // Wait for producers and consumers ----------------------------

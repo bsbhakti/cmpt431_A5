@@ -33,6 +33,10 @@ public:
 template <class T,class P>
 void make_address(P *node, uint count, pointer_t<Node<T>> *newPtr){
     uintptr_t castedPtr = reinterpret_cast<uintptr_t> (node);
+    if(count == 0){
+        count =1;
+        std::cout<<"Incrementing count"<<count <<std::endl;
+    }
     uintptr_t newCount = static_cast<uintptr_t>(count) << 48;
     uintptr_t combined = newCount | castedPtr;
 
@@ -82,14 +86,16 @@ public:
             LFENCE;
             pointer_t<Node<T>> next = tail.address()->next;
             LFENCE;
-            if (tail.address() == q_tail.address()){
+            if (tail.ptr == q_tail.ptr){
                 if (next.address() == NULL) {
                     // if(&tail.address()->next.compare_exchange_weak(next, next.count()+1>));
                     pointer_t<Node<T>> newPtr;
                     make_address(node,next.count() +1, &newPtr );
                     if(CAS(&(tail.address()->next), next, newPtr)) {
+                        SFENCE;
                         std::cout<<"Logically enqueued"<<value<<std::endl;
-                        std::cout<<"this was next"<<next.address()<<" this is tail"<<tail.address()<<std::endl;
+                        std::cout<<"this is new made"<<newPtr.address()<<" "<<newPtr.count()<<std::endl;
+                        std::cout<<"this is what we made new node with"<<node<<"  "<<next.count()+1<<std::endl;
                         break;
                     }
                 }
@@ -106,11 +112,14 @@ public:
         SFENCE;
         pointer_t<Node<T>> newPtr;
         make_address(node,tail.count() + 1, &newPtr );
-        // std::cout<<"Im here2"<<std::endl;
+        std::cout<<"Im here2"<<std::endl;
         CAS(&q_tail, tail, newPtr);
-                // std::cout<<"Im here3"<<std::endl;
+        SFENCE;
+        std::cout<<"Im here3"<<std::endl;
 
-        std::cout<<"Hopefuky tail is "<< q_tail.ptr->value <<"look" <<std::endl;
+        std::cout<<"Hopefuky tail is "<< q_tail.address() <<"look" <<std::endl;
+        std::cout<<"Hopefuky tail is "<< q_tail.address()->value <<"look" <<std::endl;
+
 
         // std::cout<<"here write code1"<<std::endl;
     }
@@ -121,27 +130,27 @@ public:
         pointer_t<Node<T>> head;
         std::cout<<"inside dequeue"<<std::endl;
         while(true){
-            std::cout<<"inside dequeue 0.1"<<std::endl;
+            // std::cout<<"inside dequeue 0.1"<<std::endl;
 
             head = q_head;
-            std::cout<<"inside dequeue 0.2"<<std::endl;
+            // std::cout<<"inside dequeue 0.2"<<std::endl;
 
             LFENCE;
-            std::cout<<"inside dequeue 0.3"<<std::endl;
+            // std::cout<<"inside dequeue 0.3"<<std::endl;
 
             pointer_t<Node<T>> tail = q_tail;
-            std::cout<<"inside dequeue 0.4"<<std::endl;
+            // std::cout<<"inside dequeue 0.4"<<std::endl;
 
             LFENCE;
-            std::cout<<"inside dequeue 0.5"<<std::endl;
+            // std::cout<<"inside dequeue 0.5"<<std::endl;
 
             pointer_t<Node<T>> next = head.address()->next;
-            std::cout<<"inside dequeue 0.6"<<std::endl;
+            // std::cout<<"inside dequeue 0.6"<<std::endl;
 
             LFENCE;
-            std::cout<<"inside dequeue 1"<<std::endl;
+            // std::cout<<"inside dequeue 1"<<std::endl;
 
-            if (head.address() == q_head.address()) {
+            if (head.ptr == q_head.ptr) {
                 std::cout<<"inside dequeue 1a"<<std::endl;
 
                 if(head.address() == tail.address()) {
@@ -162,7 +171,7 @@ public:
                     std::cout<<"inside dequeue 3b dequeing"<<q_head.ptr->value<<std::endl;
 
                     if(CAS(&q_head, head, newPtr))
-                        std::cout<<"inside dequeue 3c new head:"<<q_head.ptr->value<<std::endl;
+                        // std::cout<<"inside dequeue 3c new head:"<<q_head.ptr->value<<std::endl;
                         break;
                 }
             }
