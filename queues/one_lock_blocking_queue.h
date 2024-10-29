@@ -71,15 +71,19 @@ public:
             bool expected = true;
             bool desired = false;
 
-            while(!wakeup_dq.compare_exchange_weak(expected, desired) && !no_more_enqueues.load()){
+            while(!wakeup_dq.compare_exchange_weak(expected, desired) || no_more_enqueues.load()){
                 expected = true;
             } //busy wait if wakeup_dq is false and no_more_enq is false
          
             qLock.lock();
-
+            if(newHead != nullptr){
+                removeNode = q_head;
+                newHead = q_head->next;
+                wakeup_dq.store(false);
+            }
+        
             // q is empty and no more exq is true
             if (newHead == nullptr && no_more_enqueues.load()) {
-                wakeup_dq.store(false);
                 qLock.unlock();
                 return false;
             }
