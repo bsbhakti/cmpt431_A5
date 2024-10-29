@@ -66,7 +66,6 @@ struct ProducerWithInputs
         // std::cout << "Start producing..\n";
         for (long i = start_; i < end_; i++)
         {
-            std::cout<<"enueing"<<inputs_[i]<<std::endl;
             my_queue.enqueue(inputs_[i]);
         }
 

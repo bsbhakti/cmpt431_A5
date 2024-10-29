@@ -93,9 +93,9 @@ public:
                     make_address(node,next.count() +1, &newPtr );
                     if(CAS(&(tail.address()->next), next, newPtr)) {
                         SFENCE;
-                        std::cout<<"Logically enqueued"<<value<<std::endl;
-                        std::cout<<"this is new made"<<newPtr.address()<<" "<<newPtr.count()<<std::endl;
-                        std::cout<<"this is what we made new node with"<<node<<"  "<<next.count()+1<<std::endl;
+                        // std::cout<<"Logically enqueued"<<value<<std::endl;
+                        // std::cout<<"this is new made"<<newPtr.address()<<" "<<newPtr.count()<<std::endl;
+                        // std::cout<<"this is what we made new node with"<<node<<"  "<<next.count()+1<<std::endl;
                         break;
                     }
                 }
@@ -112,13 +112,13 @@ public:
         SFENCE;
         pointer_t<Node<T>> newPtr;
         make_address(node,tail.count() + 1, &newPtr );
-        std::cout<<"Im here2"<<std::endl;
+        // std::cout<<"Im here2"<<std::endl;
         CAS(&q_tail, tail, newPtr);
         SFENCE;
-        std::cout<<"Im here3"<<std::endl;
+        // std::cout<<"Im here3"<<std::endl;
 
-        std::cout<<"Hopefuky tail is "<< q_tail.address() <<"look" <<std::endl;
-        std::cout<<"Hopefuky tail is "<< q_tail.address()->value <<"look" <<std::endl;
+        // std::cout<<"Hopefuky tail is "<< q_tail.address() <<"look" <<std::endl;
+        // std::cout<<"Hopefuky tail is "<< q_tail.address()->value <<"look" <<std::endl;
 
 
         // std::cout<<"here write code1"<<std::endl;
@@ -128,7 +128,7 @@ public:
     {
         // Use LFENCE and SFENCE as mentioned in pseudocode
         pointer_t<Node<T>> head;
-        std::cout<<"inside dequeue"<<std::endl;
+        // std::cout<<"inside dequeue"<<std::endl;
         while(true){
             head = q_head;
             LFENCE;
@@ -141,19 +141,19 @@ public:
                 if(head.address() == tail.address()) {
                     if(next.address() == NULL)
                             return false;
-                    std::cout<<"inside dequeue 2"<<std::endl;
+                    // std::cout<<"inside dequeue 2"<<std::endl;
                     
                     pointer_t<Node<T>> newPtr;
                     make_address(next.address(),tail.count() + 1, &newPtr );
                     CAS(&q_tail, tail, newPtr);	//DLABEL
                     SFENCE;
-                    std::cout<<"moving tail"<<q_tail.address()<<std::endl;
+                    // std::cout<<"moving tail"<<q_tail.address()<<std::endl;
                 }
                 else {
                     *value = next.address()->value;
                     pointer_t<Node<T>> newPtr;
                     make_address(next.address(),head.count() + 1, &newPtr );
-                    std::cout<<"inside dequeing"<<q_head.address()->value<<std::endl;
+                    // std::cout<<"inside dequeing"<<q_head.address()->value<<std::endl;
 
                     if(CAS(&q_head, head, newPtr))
                         // std::cout<<"inside dequeue 3c new head:"<<q_head.ptr->value<<std::endl;
@@ -163,7 +163,7 @@ public:
         }
         
         my_allocator_.freeNode(head.address());
-        std::cout<<"inside dequeue 5"<<std::endl;
+        // std::cout<<"inside dequeue 5"<<std::endl;
 
         return true;
 
