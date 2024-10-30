@@ -54,6 +54,7 @@ public:
             wakeup_dq.store(true);
         }
         total_elements ++;
+        // std::cout<<"enqueueing"<<q_tail->value<<std::endl;
         qLock.unlock();
     }
 
@@ -68,22 +69,33 @@ public:
         while(newHead == NULL){
             //q is empty -> wait 
             qLock.unlock();
-            bool expected = true;
-            bool desired = false;
+            
+            // std::cout<<"waiting"<<wakeup_dq.load()<<no_more_enqueues.load()<<std::endl;
+            //   Wait until enqueuer wakes me up OR no more enqueues are coming
+            //wait until enq is false OR no more is false
+            while(!wakeup_dq.load() && !no_more_enqueues.load() );
+            
 
-            while(!wakeup_dq.compare_exchange_weak(expected, desired) || no_more_enqueues.load()){
-                expected = true;
-            } //busy wait if wakeup_dq is false and no_more_enq is false
+             //busy wait if wakeup_dq is false and no_more_enq is false
+            // std::cout<<"done waiting"<<std::endl;
+
          
             qLock.lock();
+            if(q_head != nullptr){
+                newHead = q_head->next;
+            }
+            else {
+                newHead = nullptr;
+            }
             if(newHead != nullptr){
                 removeNode = q_head;
                 newHead = q_head->next;
-                wakeup_dq.store(false);
+                wakeup_dq.store(true);
             }
         
             // q is empty and no more exq is true
             if (newHead == nullptr && no_more_enqueues.load()) {
+                wakeup_dq.store(false);
                 qLock.unlock();
                 return false;
             }
@@ -91,6 +103,7 @@ public:
         q_head = newHead;
         *value = newHead->value;
         total_elements --;
+        // std::cout<<"deq"<<*value<<std::endl;
         my_allocator_.freeNode(removeNode);
         qLock.unlock();
         return true;
